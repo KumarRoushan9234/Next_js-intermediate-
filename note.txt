@@ -29,3 +29,5 @@ next-task-manager/
 │── tsconfig.json      # TypeScript config (if using TS)
 │── package.json       # Project metadata & dependencies
 │── README.md          # Project Documentation
+
+just something
