@@ -1,13 +1,18 @@
 import { useState, useEffect } from "react";
-import { TrashIcon, PencilSquareIcon, CheckCircleIcon, XMarkIcon } from "@heroicons/react/24/solid";
+import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
+import { TrashIcon, PencilSquareIcon, CheckCircleIcon } from "@heroicons/react/24/solid";
 
-const TaskList = ({ tasks, updateTask, deleteTask, editTask }) => {
+const TaskList = ({ tasks, updateTask, deleteTask, editTask, setTasks }) => {
   const [currentPage, setCurrentPage] = useState(1);
-  const [filter, setFilter] = useState("All"); 
+  const [filter, setFilter] = useState("All");
 
   const tasksPerPage = 10;
-  
-  const filteredTasks = tasks.filter(task => 
+
+  useEffect(() => {
+    localStorage.setItem("tasks", JSON.stringify(tasks));
+  }, [tasks]);
+
+  const filteredTasks = tasks.filter(task =>
     filter === "All" ? true : filter === "Completed" ? task.status === "Completed" : task.status === "Pending"
   );
 
@@ -26,9 +31,21 @@ const TaskList = ({ tasks, updateTask, deleteTask, editTask }) => {
     return `${hours}h ${minutes}m left`;
   };
 
+  // **Fix: Save new order to localStorage after drag**
+  const handleDragEnd = (result) => {
+    if (!result.destination) return;
+
+    const updatedTasks = [...tasks];
+    const [movedTask] = updatedTasks.splice(result.source.index, 1);
+    updatedTasks.splice(result.destination.index, 0, movedTask);
+
+    setTasks(updatedTasks);
+    localStorage.setItem("tasks", JSON.stringify(updatedTasks)); // Save new order
+  };
+
   return (
     <div className="w-full max-w-3xl mx-auto relative z-10">
-      {/* Filter Buttons (Grouped) */}
+      {/* Filter Buttons */}
       <div className="flex justify-center mt-4 mb-4 space-x-2">
         {["All", "Pending", "Completed"].map((status) => (
           <button
@@ -41,40 +58,55 @@ const TaskList = ({ tasks, updateTask, deleteTask, editTask }) => {
         ))}
       </div>
 
-      {/* Task List */}
-      {currentTasks.map((task) => (
-        <div 
-          key={task.id} 
-          className={`relative p-4 rounded-lg my-2 shadow-lg transition-colors duration-1000 ${
-            task.status === "Completed" 
-              ? "bg-gradient-to-r from-green-900 to-teal-800" 
-              : "bg-gradient-to-r from-orange-900 to-red-800"
-          }`}
-        >
-          <button onClick={() => updateTask(task.id)} className="absolute left-3 top-1/2 transform -translate-y-1/2">
-            <CheckCircleIcon className={`h-6 w-6 ${task.status === "Completed" ? "text-green-400" : "text-yellow-500"}`} />
-          </button>
+      {/* Drag & Drop Context */}
+      <DragDropContext onDragEnd={handleDragEnd}>
+        <Droppable droppableId="tasks">
+          {(provided) => (
+            <div {...provided.droppableProps} ref={provided.innerRef}>
+              {currentTasks.map((task, index) => (
+                <Draggable key={task.id} draggableId={task.id.toString()} index={index}>
+                  {(provided) => (
+                    <div 
+                      ref={provided.innerRef} 
+                      {...provided.draggableProps} 
+                      {...provided.dragHandleProps}
+                      className={`relative p-4 rounded-lg my-2 shadow-lg cursor-grab transition-all duration-300 ${
+                        task.status === "Completed" 
+                          ? "bg-gradient-to-r from-green-900 to-teal-800" 
+                          : "bg-gradient-to-r from-orange-900 to-red-800"
+                      }`}
+                    >
+                      <button onClick={() => updateTask(task.id)} className="absolute left-3 top-1/2 transform -translate-y-1/2">
+                        <CheckCircleIcon className={`h-6 w-6 ${task.status === "Completed" ? "text-green-400" : "text-yellow-500"}`} />
+                      </button>
 
-          <div className="ml-14">
-            <span 
-              className="text-lg font-semibold truncate block max-w-[250px] hover:whitespace-normal text-white" 
-              title={task.task}
-            >
-              {task.task}
-            </span>
-            <span className="block text-sm text-gray-300">{getTimeLeft(task.deadline)}</span>
-          </div>
+                      <div className="ml-14">
+                        <span 
+                          className="text-lg font-semibold truncate block max-w-[250px] hover:whitespace-normal text-white" 
+                          title={task.task}
+                        >
+                          {task.task}
+                        </span>
+                        <span className="block text-sm text-gray-300">{getTimeLeft(task.deadline)}</span>
+                      </div>
 
-          <div className="flex gap-2 items-center absolute right-3 top-1/2 transform -translate-y-1/2">
-            <button onClick={() => editTask(task.id)}>
-              <PencilSquareIcon className="h-6 w-6 text-blue-400" />
-            </button>
-            <button onClick={() => deleteTask(task.id)}>
-              <TrashIcon className="h-6 w-6 text-red-400" />
-            </button>
-          </div>
-        </div>
-      ))}
+                      <div className="flex gap-2 items-center absolute right-3 top-1/2 transform -translate-y-1/2">
+                        <button onClick={() => editTask(task.id)}>
+                          <PencilSquareIcon className="h-6 w-6 text-blue-400" />
+                        </button>
+                        <button onClick={() => deleteTask(task.id)}>
+                          <TrashIcon className="h-6 w-6 text-red-400" />
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </Draggable>
+              ))}
+              {provided.placeholder}
+            </div>
+          )}
+        </Droppable>
+      </DragDropContext>
 
       {/* Pagination Controls */}
       <div className="flex justify-between mt-4">

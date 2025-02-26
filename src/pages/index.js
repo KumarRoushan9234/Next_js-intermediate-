@@ -8,31 +8,45 @@ export default function Home() {
   const [tasks, setTasks] = useState([]);
   const [selectedDate, setSelectedDate] = useState(null);
 
+  // ✅ Load tasks from localStorage **only when component mounts**
   useEffect(() => {
     const storedTasks = JSON.parse(localStorage.getItem("tasks")) || [];
     setTasks(storedTasks);
   }, []);
 
+  // ✅ Save tasks to localStorage when `tasks` state changes (prevent overwriting on first load)
   useEffect(() => {
-    localStorage.setItem("tasks", JSON.stringify(tasks));
+    if (tasks.length > 0) {
+      localStorage.setItem("tasks", JSON.stringify(tasks));
+    }
   }, [tasks]);
 
   const filteredTasks = selectedDate
-    ? tasks.filter(task => task.deadline && task.deadline.startsWith(selectedDate.toISOString().split("T")[0]))
-
+    ? tasks.filter(task => task.deadline?.startsWith(selectedDate.toISOString().split("T")[0]))
     : tasks;
 
-  const addTask = (task) => setTasks([...tasks, { id: Date.now(), ...task }]);
-  const updateTask = (id) => setTasks(prev => prev.map(task => task.id === id ? { ...task, status: task.status === "Completed" ? "Pending" : "Completed" } : task));
-  const deleteTask = (id) => setTasks(tasks.filter(task => task.id !== id));
+  const addTask = (task) => {
+    const newTasks = [...tasks, { id: Date.now(), ...task }];
+    setTasks(newTasks);
+  };
 
-  // ✅ Define editTask function here
-  const editTask = (taskId, newTaskText) => {
-    setTasks(prevTasks =>
-      prevTasks.map(task =>
-        task.id === taskId ? { ...task, task: newTaskText } : task
-      )
+  const updateTask = (id) => {
+    const newTasks = tasks.map(task =>
+      task.id === id ? { ...task, status: task.status === "Completed" ? "Pending" : "Completed" } : task
     );
+    setTasks(newTasks);
+  };
+
+  const deleteTask = (id) => {
+    const newTasks = tasks.filter(task => task.id !== id);
+    setTasks(newTasks);
+  };
+
+  const editTask = (taskId, newTaskText) => {
+    const newTasks = tasks.map(task =>
+      task.id === taskId ? { ...task, task: newTaskText } : task
+    );
+    setTasks(newTasks);
   };
 
   return (
@@ -48,7 +62,8 @@ export default function Home() {
             tasks={filteredTasks} 
             updateTask={updateTask} 
             deleteTask={deleteTask} 
-            editTask={editTask} // ✅ Now it's correctly defined and passed
+            editTask={editTask}
+            setTasks={setTasks}  
           />
         </div>
       </div>
