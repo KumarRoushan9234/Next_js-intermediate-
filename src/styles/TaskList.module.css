@@ -1,0 +1,10 @@
+.taskList {
+  list-style: none;
+  padding: 10px;
+  max-width: 600px;
+  margin: 20px auto;
+}
+
+.taskList li {
+  margin-bottom: 10px;
+}
