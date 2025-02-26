@@ -44,9 +44,10 @@ const TaskList = ({ tasks, updateTask, deleteTask, editTask, setTasks }) => {
   };
 
   return (
-    <div className="w-full max-w-3xl mx-auto relative z-10">
+    <div className="w-full max-w-3xl mt-4 mx-auto relative z-10 border-2 border-gray-500 rounded-lg p-4 shadow-lg">
+
       {/* Filter Buttons */}
-      <div className="flex justify-center mt-4 mb-4 space-x-2">
+      <div className="flex justify-center mt-4 mb-4 space-x-2 border-spacing-2 border-gray-500 rounded-lg p-2 shadow-sm">
         {["All", "Pending", "Completed"].map((status) => (
           <button
             key={status}
@@ -62,7 +63,9 @@ const TaskList = ({ tasks, updateTask, deleteTask, editTask, setTasks }) => {
       <DragDropContext onDragEnd={handleDragEnd}>
         <Droppable droppableId="tasks">
           {(provided) => (
-            <div {...provided.droppableProps} ref={provided.innerRef}>
+            <div {...provided.droppableProps} ref={provided.innerRef}
+            className="border-2 border-gray-500 rounded-lg p-3 shadow-md"
+            >
               {currentTasks.map((task, index) => (
                 <Draggable key={task.id} draggableId={task.id.toString()} index={index}>
                   {(provided) => (
@@ -70,11 +73,12 @@ const TaskList = ({ tasks, updateTask, deleteTask, editTask, setTasks }) => {
                       ref={provided.innerRef} 
                       {...provided.draggableProps} 
                       {...provided.dragHandleProps}
-                      className={`relative p-4 rounded-lg my-2 shadow-lg cursor-grab transition-all duration-300 ${
+                      className={`relative p-4 my-2 cursor-grab transition-all rounded-2xl duration-100 ${
                         task.status === "Completed" 
                           ? "bg-gradient-to-r from-green-900 to-teal-800" 
                           : "bg-gradient-to-r from-orange-900 to-red-800"
                       }`}
+                      // border-2 border-gray-400 rounded-lg shadow-lg 
                     >
                       <button onClick={() => updateTask(task.id)} className="absolute left-3 top-1/2 transform -translate-y-1/2">
                         <CheckCircleIcon className={`h-6 w-6 ${task.status === "Completed" ? "text-green-400" : "text-yellow-500"}`} />
