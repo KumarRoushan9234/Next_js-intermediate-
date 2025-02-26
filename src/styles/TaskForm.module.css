@@ -32,3 +32,28 @@
 .taskForm button:hover {
   background: #4fa3d1;
 }
+
+/* Horizontal Scroll for Priority */
+.priorityContainer {
+  display: flex;
+  overflow-x: auto;
+  gap: 10px;
+  padding: 10px;
+  white-space: nowrap;
+  max-width: 100%;
+}
+
+.priorityButton {
+  background: #444;
+  padding: 8px 15px;
+  border-radius: 5px;
+  cursor: pointer;
+  color: white;
+  border: none;
+  min-width: 80px;
+  text-align: center;
+}
+
+.priorityButton.active {
+  background: #61dafb;
+}

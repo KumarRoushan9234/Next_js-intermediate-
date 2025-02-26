@@ -1,19 +1,19 @@
 export default function handler(req, res) {
-  if (typeof window === "undefined") {
-    return res.status(500).json({ message: "Local storage is not available on the server." });
+  if (typeof window !== "undefined") {
+    return res.status(500).json({ message: "API cannot run in browser!" });
   }
 
-  let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+  let tasks = JSON.parse(localStorage.getItem("tasks") || "[]");
 
   if (req.method === "GET") {
     return res.status(200).json(tasks);
   }
 
   if (req.method === "POST") {
-    const { text } = req.body;
+    const { text, deadline, priority } = req.body;
     if (!text) return res.status(400).json({ message: "Task cannot be empty!" });
 
-    const newTask = { id: Date.now(), text, completed: false };
+    const newTask = { id: Date.now(), text, deadline, priority, status: "Pending" };
     tasks.push(newTask);
     localStorage.setItem("tasks", JSON.stringify(tasks));
 
@@ -21,9 +21,9 @@ export default function handler(req, res) {
   }
 
   if (req.method === "PUT") {
-    const { id, completed } = req.body;
+    const { id, text, status } = req.body;
     tasks = tasks.map((task) =>
-      task.id === id ? { ...task, completed } : task
+      task.id === id ? { ...task, text: text || task.text, status: status || task.status } : task
     );
     localStorage.setItem("tasks", JSON.stringify(tasks));
 
