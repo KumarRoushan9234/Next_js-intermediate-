@@ -30,4 +30,5 @@ next-task-manager/
 │── package.json       # Project metadata & dependencies
 │── README.md          # Project Documentation
 
-just something
+firebase auth
+
